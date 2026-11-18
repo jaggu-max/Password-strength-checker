@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: password-strength-checker
+    runtime: python
+    rootDir: password-strength-checker
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.11"
+      - key: FLASK_HTTPS
+        value: "true"
+      - key: PASSWORD_CHECKER_LOGIN_PASSWORD
+        sync: false
+      - key: PASSWORD_CHECKER_SECRET_KEY
+        sync: false

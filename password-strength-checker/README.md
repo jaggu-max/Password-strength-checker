@@ -90,6 +90,15 @@ Set `FLASK_HTTPS=true` when serving over HTTPS to enable the secure session
 cookie flag. This single shared demo password is not a production
 authentication system.
 
+### Deploy to Render
+
+The GitHub repository keeps this Flask app in the `password-strength-checker/`
+subdirectory. The repository-root `render.yaml` configures that as Render's
+Root Directory, pins Python to 3.11.11, installs `requirements.txt`, and starts
+the app with Gunicorn. Set the required `PASSWORD_CHECKER_LOGIN_PASSWORD` and
+`PASSWORD_CHECKER_SECRET_KEY` values in Render's environment settings when
+prompted by the Blueprint.
+
 ### Re-train the models (optional)
 
 ```bash
