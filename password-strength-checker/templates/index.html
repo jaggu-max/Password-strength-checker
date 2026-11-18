@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Machine Learning-Based Password Strength Checker</title>
+  <meta name="description" content="Classify passwords as Weak, Medium or Strong using machine learning.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v=2) }}">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="Password Strength Checker home">
+        <svg class="brand-icon" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="4" y="10" width="16" height="11" rx="2.5"></rect>
+          <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+          <circle cx="12" cy="15.5" r="1.4" fill="currentColor" stroke="none"></circle>
+        </svg>
+        <span>ML Password Checker</span>
+      </a>
+      <nav class="nav" aria-label="Sections">
+        <a href="#checker"><span>01.</span> Checker</a>
+        <a href="#workflow"><span>02.</span> Process</a>
+        <a href="#results"><span>03.</span> Model data</a>
+        <span class="nav-user">{{ session["user_name"] }}</span>
+        <a class="btn btn-primary nav-cta" href="#checker">Run analysis <span aria-hidden="true">&rarr;</span></a>
+        <form class="nav-logout" method="post" action="{{ url_for('logout') }}">
+          <button class="btn btn-outline" type="submit">Log out</button>
+        </form>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- ===== Hero ===== -->
+    <section class="hero">
+      <div class="container hero-layout">
+        <div class="hero-copy">
+          <div class="hero-meta">
+            <p class="dashboard-greeting">Welcome, {{ session["user_name"] }} / WORKSPACE</p>
+            <span class="status-badge {{ 'is-ready' if model_ready else 'is-offline' }}"><span class="status-dot"></span> MODEL {{ "READY" if model_ready else "OFFLINE" }}</span>
+          </div>
+          <p class="eyebrow">ML / PASSWORD SECURITY / 001</p>
+          <h1>Know your<br><span>weak points.</span></h1>
+          <p class="lead">
+            A machine-learning lens on password strength. Analyze structure,
+            spot common patterns, and get clear feedback.
+          </p>
+          <a class="hero-link" href="#checker">START A CHECK <span aria-hidden="true">&darr;</span></a>
+        </div>
+        <figure class="topology" aria-label="Illustration of the password analysis network">
+          <span class="topology-label">FIG 01 / ANALYSIS NETWORK</span>
+          <svg viewBox="0 0 360 360" role="img" aria-hidden="true">
+            <circle class="orbit orbit-one" cx="180" cy="180" r="132"></circle>
+            <circle class="orbit orbit-two" cx="180" cy="180" r="88"></circle>
+            <path class="topology-link" d="M180 180 180 48M180 180 294 246M180 180 66 246"></path>
+            <circle class="node node-center" cx="180" cy="180" r="9"></circle>
+            <circle class="node node-coral" cx="180" cy="48" r="7"></circle>
+            <circle class="node node-mint" cx="294" cy="246" r="7"></circle>
+            <circle class="node node-gold" cx="66" cy="246" r="7"></circle>
+            <circle class="node node-small" cx="180" cy="92" r="4"></circle>
+            <circle class="node node-small" cx="256" cy="224" r="4"></circle>
+            <circle class="node node-small" cx="104" cy="224" r="4"></circle>
+          </svg>
+          <figcaption><span>21 FEATURES</span><span>3 CLASSES</span><span>1 MODEL</span></figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ===== Checker ===== -->
+    <section id="checker" class="section section-tight">
+      <div class="container narrow">
+
+        <div class="card checker-card technical-form">
+          <span class="corner-marker corner-tl" aria-hidden="true"></span>
+          <span class="corner-marker corner-tr" aria-hidden="true"></span>
+          <span class="corner-marker corner-bl" aria-hidden="true"></span>
+          <span class="corner-marker corner-br" aria-hidden="true"></span>
+          <p class="eyebrow">INPUT / 01</p>
+          <h2 class="card-title">Check your password</h2>
+          <p class="muted small">Type a password and press <em>Check Password Strength</em>.</p>
+
+          <label class="field-label" for="password">Password</label>
+          <div class="input-row">
+            <input id="password" class="input" type="password" maxlength="128"
+                   autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"
+                   placeholder="Enter a password" aria-describedby="input-error">
+            <button id="toggle" class="btn btn-ghost" type="button" aria-pressed="false"
+                    aria-label="Show password">Show</button>
+          </div>
+          <p id="input-error" class="field-error" role="alert" hidden></p>
+
+          <div class="btn-row">
+            <button id="check" class="btn btn-primary" type="button">Check Password Strength</button>
+            <button id="clear" class="btn btn-outline" type="button">Clear</button>
+          </div>
+
+          <p class="privacy-note">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="4" y="10" width="16" height="11" rx="2.5"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+            </svg>
+            Your password is analysed in memory only. It is never saved or logged.
+          </p>
+        </div>
+
+        <!-- Result -->
+        <div id="result" class="card result-card" hidden aria-live="polite">
+          <div class="result-top">
+            <div>
+              <p class="small muted">Predicted strength</p>
+              <span id="badge" class="badge" data-level="">&mdash;</span>
+            </div>
+            <div class="confidence">
+              <p class="small muted">Class probability</p>
+              <p id="confidence" class="confidence-value">&mdash;</p>
+            </div>
+          </div>
+
+          <div id="meter" class="meter" data-level="" role="img" aria-label="Strength indicator">
+            <span class="seg"></span><span class="seg"></span><span class="seg"></span>
+          </div>
+          <div class="meter-labels" aria-hidden="true"><span>Weak</span><span>Medium</span><span>Strong</span></div>
+
+          <h3 class="sub-title">Password analysis</h3>
+          <div id="analysis" class="chips"></div>
+
+          <div class="highlight">
+            <h3 class="sub-title no-top">Suggestions to improve</h3>
+            <ul id="suggestions" class="suggestions"></ul>
+          </div>
+          <p id="model-used" class="small muted model-used"></p>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="section bento-section" aria-label="System overview">
+      <div class="container">
+        <div class="section-heading">
+          <div><p class="eyebrow">SYSTEM / OVERVIEW</p><h2 class="section-title">Small details.<br>Stronger decisions.</h2></div>
+          <p class="section-sub">A compact view of the checks behind each prediction.</p>
+        </div>
+        <div class="bento-grid">
+          <article class="bento-cell accent-coral">
+            <p class="mono-label">01 / FEATURE EXTRACTION</p>
+            <h3>Structure, not guesswork.</h3>
+            <p>Length, character classes, entropy, repetitions, and sequences become 21 model features.</p>
+            <div class="code-mockup"><span>length</span><span class="mock-value">→ 21 FEATURES</span></div>
+          </article>
+          <article class="bento-cell accent-mint">
+            <p class="mono-label">02 / CLASSIFICATION</p>
+            <h3>Three clear outcomes.</h3>
+            <p>The trained model classifies each submitted password as weak, medium, or strong.</p>
+            <div class="class-chips"><span>WEAK</span><span>MEDIUM</span><span>STRONG</span></div>
+          </article>
+          <article class="bento-cell accent-gold">
+            <p class="mono-label">03 / INSTANT FEEDBACK</p>
+            <h3>Actionable by design.</h3>
+            <p>Review the model's confidence, password analysis, and suggestions in one place.</p>
+            <div class="code-mockup"><span>result.status</span><span class="mock-value">→ READY TO REVIEW</span></div>
+          </article>
+          <article class="bento-cell accent-forest">
+            <p class="mono-label">04 / PRIVACY</p>
+            <h3>In memory. Not on disk.</h3>
+            <p>Passwords are analyzed for the request only; they are not saved or included in logs.</p>
+            <div class="privacy-stamp"><span class="status-dot"></span> PROCESSING ONLY</div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Workflow ===== -->
+    <section id="workflow" class="section">
+      <div class="container">
+        <h2 class="section-title">Proposed System and Working Principle</h2>
+        <p class="section-sub">From the moment a password is typed to the feedback shown on screen.</p>
+
+        <ol class="flow">
+          <li class="flow-step">
+            <span class="step-no">1</span>
+            <h3>User Input</h3>
+            <p>User enters the password via the web interface.</p>
+          </li>
+          <li class="flow-step">
+            <span class="step-no">2</span>
+            <h3>Transmission</h3>
+            <p>The Flask backend receives the data through a JSON POST request.</p>
+          </li>
+          <li class="flow-step">
+            <span class="step-no">3</span>
+            <h3>Processing</h3>
+            <p>Python extracts the numerical features from the password.</p>
+          </li>
+          <li class="flow-step">
+            <span class="step-no">4</span>
+            <h3>Prediction</h3>
+            <p>The trained ML model analyses the features (<code>model.pkl</code>).</p>
+          </li>
+          <li class="flow-step">
+            <span class="step-no">5</span>
+            <h3>Feedback</h3>
+            <p>The category and actionable suggestions are displayed.</p>
+          </li>
+        </ol>
+
+        <div class="highlight advantages">
+          <h3 class="sub-title no-top">System advantages</h3>
+          <ul class="adv-list">
+            <li>Automated classification</li>
+            <li>Machine learning-based accuracy</li>
+            <li>Easy-to-use interface</li>
+            <li>Actionable security feedback</li>
+            <li>Modular architectural design</li>
+          </ul>
+        </div>
+
+        <h3 class="sub-title">Features extracted from each password</h3>
+        <div class="grid-3">
+          <div class="card mini">
+            <h4>Basic metrics</h4>
+            <p>Total length and counts of uppercase letters, lowercase letters, digits and symbols.</p>
+          </div>
+          <div class="card mini">
+            <h4>Advanced metrics</h4>
+            <p>Shannon entropy (complexity), character-set size and total entropy in bits.</p>
+          </div>
+          <div class="card mini">
+            <h4>Pattern analysis</h4>
+            <p>Repeated characters, sequences such as <code>abc</code> / <code>123</code>, dictionary words, common passwords and leet-speak.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Model results ===== -->
+    <section id="results" class="section">
+      <div class="container">
+        <h2 class="section-title">Model Training and Evaluation</h2>
+        <p class="section-sub">
+          Decision Tree, Random Forest and Logistic Regression were trained and compared.
+          Every number below is loaded live from <code>models/metrics.json</code>, which is written by the training script.
+        </p>
+
+        <div id="results-error" class="highlight" hidden></div>
+
+        <div id="results-body" hidden>
+          <div id="stats" class="stats"></div>
+
+          <h3 class="sub-title">Model comparison (test set)</h3>
+          <div class="table-wrap">
+            <table class="table" id="compare-table">
+              <thead>
+                <tr>
+                  <th>Model</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1-score</th>
+                  <th>Validation F1</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <p class="small muted">Precision, recall and F1-score are weighted averages over the three classes.</p>
+
+          <div id="best-note" class="highlight"></div>
+
+          <h3 class="sub-title">Confusion matrices (test set)</h3>
+          <div id="matrices" class="grid-3"></div>
+          <p class="small muted">Rows = actual class, columns = predicted class.</p>
+
+          <div id="importance-wrap" hidden>
+            <h3 class="sub-title">Most influential features (selected model)</h3>
+            <div id="importance" class="bars"></div>
+          </div>
+
+          <div id="dataset-note" class="highlight note"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Machine Learning-Based Password Strength Checker &middot; Python, Flask, scikit-learn, Pandas, NumPy</p>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js', v=2) }}" defer></script>
+</body>
+</html>

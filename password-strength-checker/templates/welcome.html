@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Continue to your password security workspace.">
+  <title>Welcome | ML Password Checker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v=2) }}">
+</head>
+<body class="auth-page">
+  <main class="auth-shell">
+    <section class="auth-card welcome-card" aria-labelledby="welcome-title">
+      <span class="corner-marker corner-tl" aria-hidden="true"></span>
+      <span class="corner-marker corner-tr" aria-hidden="true"></span>
+      <span class="corner-marker corner-bl" aria-hidden="true"></span>
+      <span class="corner-marker corner-br" aria-hidden="true"></span>
+      <div class="auth-topline">
+        <a class="brand auth-brand" href="{{ url_for('index') }}"><span class="brand-mark">P</span><span>ML Password Checker</span></a>
+        <span class="auth-ref">SESSION / ACTIVE</span>
+      </div>
+      <div class="welcome-orbit" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor"
+             stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 7 10 17l-5-5"></path>
+          <circle cx="12" cy="12" r="10"></circle>
+        </svg>
+      </div>
+      <p class="auth-eyebrow">YOU'RE SIGNED IN</p>
+      <h1 id="welcome-title">Welcome, {{ user_name }}! <span class="wave" aria-label="waving hand">👋</span></h1>
+      <p class="auth-description">Your security workspace is ready. Check a password and get instant feedback from your machine learning model.</p>
+      <a class="btn btn-primary auth-submit continue-link" href="{{ url_for('index') }}">
+        Continue to Password Checker <span aria-hidden="true">&rarr;</span>
+      </a>
+      <form class="welcome-logout" method="post" action="{{ url_for('logout') }}">
+        <button class="btn btn-outline" type="submit">Log out</button>
+      </form>
+    </section>
+    <p class="auth-copyright">Machine Learning-Based Password Strength Checker</p>
+  </main>
+</body>
+</html>

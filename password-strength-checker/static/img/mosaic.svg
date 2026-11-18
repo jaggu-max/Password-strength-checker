@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="320" viewBox="0 0 360 320">
+  <rect width="360" height="320" fill="#F7F7F5"/>
+  <g fill="none" stroke="#3A3A38" stroke-opacity=".3" stroke-width=".5">
+    <path d="M120 0v80h120V0M240 0v40h120M0 80h80v120H0M80 80h100v80H80M180 80v80h60v80h120M80 160h100v80H80M0 200h80v120M180 240h60v80M240 240h120M300 40v40M120 240v80M240 40h60v40"/>
+    <path d="M0 80h80V0M180 0v80M120 80v80M240 160h60v80M300 80v80h60M0 200h80v-40M80 240v80M120 240h60v80M240 240v-80M300 240v80"/>
+  </g>
+</svg>
